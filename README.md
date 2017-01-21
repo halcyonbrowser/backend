@@ -49,7 +49,7 @@ Our Postgres database sports the following data schema - database tables followe
   
     ```
     {
-      command_type: "goto"|"goto_full"|"goto_link"|"search"|"facebook_login"|"facebook_logout",
+      command_type: "goto"|"goto_full"|"goto_link"|"search"|"facebook_login"|"facebook_logout"|"facebook_messages"|"facebook_timeline"|"facebook_notifications",
       result: SearchResultList|{}
     }
     ```
