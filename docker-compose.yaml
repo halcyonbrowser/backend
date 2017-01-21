@@ -1,0 +1,26 @@
+version: '2'
+services:
+
+  api:
+    image: python:2.7.12
+    container_name: "halcyon_backend_api"
+    build: .
+    command: "flask run --host=0.0.0.0"
+    ports: 
+      - "80:8000"
+    volumes:
+      - "./app:/halcyon"
+    links:
+      - core_nlp
+      - db
+    env_file: .env
+  
+  core_nlp:
+    image: motiz88/corenlp:latest
+    container_name: "halcyon_backend_core_nlp"
+    
+  db:
+    image: postgres:9.6.1
+    container_name: "halcyon_backend_db"
+    env_file: .env
+  
