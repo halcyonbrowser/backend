@@ -1,1 +1,2 @@
 from audio_transcribe import audio_transcribe
+from determine_command import determine_command
