@@ -12,12 +12,6 @@ class Command(Base):
   id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True)
   session_id = sqlalchemy.Column(sqlalchemy.Integer,
                                  sqlalchemy.ForeignKey('session.id'))
-  '''
-  command is either
-    "goto --website--", "goto_full --website--"
-    "goto_link", "search",
-    "facebook_login", "facebook_logout",
-  '''
   command = sqlalchemy.Column(sqlalchemy.TEXT)
   time = sqlalchemy.Column(sqlalchemy.TIMESTAMP)
 
