@@ -1,17 +1,9 @@
-from os import environ
 import enum
 import sqlalchemy
 import sqlalchemy.orm
 from sqlalchemy.ext import declarative
 
-sqlalchemy.create_engine(
-  'postgresql+psycopg2://{}:{}@/{}'.format(
-    environ.get('POSTGRES_USER'),
-    environ.get('POSTGRES_PASSWORD'),
-    environ.get('POSTGRES_DB')
-  ),
-  echo=True
-)
+
 Base = declarative.declarative_base()
 
 
