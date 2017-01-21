@@ -24,7 +24,7 @@ Deploying on a Linode server on a Docker-ized environment consisting of:
 ## DB Schema
 Our Postgres database sports the following data schema - database tables followed by the database column types:
 * **session** - id:int, time:time, os:string, cpu_count:int, release:string, hostname:string
-* **command** - id:int, session_id:int(foreign), command:string(goto, goto_full, search, login_facebook)
+* **command** - id:int, session_id:int(foreign), command:string(goto, goto_full, search, login_facebook), time:timestamp
 * **document** - id:int, website:string
 * **document_atom** - document_id:int(foreign), rank:int, text:string, type:string(highlight, image_description, factoid, link), entity:string(person, organization, location, money, percent, date, time)
 

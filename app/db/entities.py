@@ -1,6 +1,7 @@
 from os import environ
 import enum
 import sqlalchemy
+import sqlalchemy.orm
 from sqlalchemy.ext import declarative
 
 sqlalchemy.create_engine(
@@ -23,6 +24,12 @@ class Session(Base):
   release = sqlalchemy.Column(sqlalchemy.VARCHAR)
   hostname = sqlalchemy.Column(sqlalchemy.VARCHAR)
 
+  commands = sqlalchemy.orm.relationship(
+    'Command',
+    back_populates='session',
+    order_by=Command.time
+  )
+
 
 class Command(Base):
   __tablename__ = 'command'
@@ -35,12 +42,24 @@ class Command(Base):
     "search", "login_facebook"
   '''
   command = sqlalchemy.Column(sqlalchemy.TEXT)
+  time = sqlalchemy.Column(sqlalchemy.TIMESTAMP)
+
+  session = sqlalchemy.orm.relationship(
+    'Session',
+    back_populates='commands'
+  )
 
 
 class Document(Base):
   __tablename__ = 'document'
   id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True)
   website = sqlalchemy.Column(sqlalchemy.String)
+
+  document_atoms = sqlalchemy.orm.relationship(
+    'DocumentAtom',
+    back_populates='document',
+    order_by=DocumentAtom.rank
+  )
 
 
 class DocumentAtom(Base):
@@ -68,3 +87,8 @@ class DocumentAtom(Base):
   text = sqlalchemy.Column(sqlalchemy.TEXT)
   type = sqlalchemy.Column(sqlalchemy.Enum(TypeEnum))
   entity = sqlalchemy.Column(sqlalchemy.Enum(EntityEnum))
+
+  document = sqlalchemy.orm.relationship(
+    'Document',
+    back_populates='document_atoms'
+  )
