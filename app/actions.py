@@ -1,9 +1,9 @@
 from os import environ, path
 from db import entities
-import itertools
+from datetime import datetime
 import utils
 
-import fuzzy
+
 from cerberus.validator import Validator
 import sqlalchemy
 from sqlalchemy.orm import sessionmaker
@@ -17,7 +17,9 @@ engine = sqlalchemy.create_engine(
     ),
     echo=True
   )
-session = (sessionmaker().configure(bind=engine))()
+Session = sessionmaker()
+Session.configure(bind=engine)
+session = Session()
 
 
 def new_session(device_info):
@@ -58,7 +60,7 @@ def new_session(device_info):
   return None, session_entity.id
 
 
-def command_execute(uttered):
+def command_execute(uttered, session_id):
   """
   Parse out a command and execute command as wanted
   :return: (Error, dict)
@@ -69,43 +71,36 @@ def command_execute(uttered):
     "read messages", "read timeline",
     "read notifications", "logout Facebook"
   ]
+  commands_standardized = {
+    "go to": "goto",
+    "go to full": "goto_full",
+    "login Facebook": "facebook_login",
+    "logout Facebook": "facebook_logout",
+    "search": "search",
+    "read messages": "facebook_messages",
+    "read timeline": "facebook_timeline",
+    "read notifications": "facebook_notifications"
+  }
 
-  def determine_command(uttered, commands):
-    """
-    Determine the command that was uttered
-    :param uttered: phrase given by user
-    :return: (command, uttered substring)
-    """
-    words = uttered.split()
-    words_powerset = [
-      " ".join(combination)
-      for r in range(1, len(words))
-      for combination in itertools.combinations(words, r)
-    ]
-
-    d_metaphone = fuzzy.DMetaphone()
-    commands_dmetaphone = [
-      (command, d_metaphone(command))
-      for command in commands
-      ]
-    words_powerset_dmetaphone = [
-      (combination, d_metaphone(combination))
-      for combination in words_powerset
-    ]
-
-    for (command, command_dmeta) in commands_dmetaphone:
-      for (uttered, uttered_dmeta) in words_powerset_dmetaphone:
-        if len(set(command_dmeta).intersection(set(uttered_dmeta))):
-          return command, uttered
-
-    return None, None
-
-  actual, utterance_substring = determine_command(uttered, commands)
+  actual, utterance_substring = utils.determine_command(
+    uttered, commands
+  )
   if actual is None or utterance_substring is None:
     return ValueError("Command doesn't exist"), {}
 
+  actual_standardized = commands_standardized.get(actual)
+  command_entity = entities.Command(
+    session_id=session_id,
+    command=actual_standardized,
+    time=datetime.now().microsecond
+  )
+  session.add_all(command_entity)
+  session.commit()
 
-def command_audio(audio_file):
+  return actual_standardized, utterance_substring
+
+
+def command_audio(audio_file, session_id):
   """
   Transcribe an audio file command into its text form and process accordingly
   :param audio_file:
@@ -121,5 +116,4 @@ def command_audio(audio_file):
   if transcription is None:
     return TypeError("No audio was picked up"), ""
 
-  return command_execute(transcription)
-
+  return command_execute(transcription, session_id)
