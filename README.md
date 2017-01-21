@@ -31,8 +31,9 @@ Our Postgres database sports the following data schema - database tables followe
 
 ## API Endpoints
 * POST _/init/_ 
-  * Request: 
-    ```json
+  * Request:
+    
+    ```
     {
       os: string,
       cpu_count: string,
@@ -40,19 +41,23 @@ Our Postgres database sports the following data schema - database tables followe
       hostname: string
     }
     ```
+  
   * Response: `string` - token that can be paired with subsequent command-based API requests to co-identify a command to a session (for smarter summaries and actions)
  
 * POST _/command_audio/_
   * Request: `audio_file` - audio file to process (recorded user's speech) 
   * Response: `json` 
-    ```json 
+  
+    ```
     {
       command_type: "goto"|"goto_full"|"goto_link"|"search"|"login_facebook",
       result: SearchResultList|{}
     }
     ```
+    
     If the command_type is "search", a result of schema `SearchResultList` is returned as the `result`'s value. Otherwise, an empty object is returned. `SearchResultList` has the following schema:
-    ```json 
+    
+    ```
     [{
       doc_id: int,
       rank: int,
