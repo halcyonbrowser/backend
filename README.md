@@ -24,14 +24,13 @@ Deploying on a Linode server on a Docker-ized environment consisting of:
 ## DB Schema
 Our Postgres database sports the following data schema - database tables followed by the database column types:
 * **session** - id:int, time:time, os:string, cpu_count:int, release:string, hostname:string
-* **command** - session_id:int(foreign), id:int, command:string(goto, goto_full, search, login_facebook)
-* **command_result** - command_id:int(foreign), output:string
+* **command** - id:int, session_id:int(foreign), command:string(goto, goto_full, search, login_facebook)
 * **document** - id:int, website:string
-* **document_summary** - doc_id:int(foreign), rank:int, text:string, type:string(highlight, image_description, factoid, link), entity:string(person, organization, location, money, percent, date, time)
+* **document_atom** - document_id:int(foreign), rank:int, text:string, type:string(highlight, image_description, factoid, link), entity:string(person, organization, location, money, percent, date, time)
 
 ## API Endpoints
 * POST _/init/_ 
-  * Request:
+  * Request: `json` - device-identifying information, stored under `devid` key
     
     ```
     {
@@ -45,7 +44,7 @@ Our Postgres database sports the following data schema - database tables followe
   * Response: `string` - token that can be paired with subsequent command-based API requests to co-identify a command to a session (for smarter summaries and actions)
  
 * POST _/command_audio/_
-  * Request: `audio_file` - audio file to process (recorded user's speech) 
+  * Request: `multipart/form-data` - audio file to process (recorded user's speech) uploaded in an upload form with key `command` and token with key `token`
   * Response: `json` 
   
     ```
@@ -68,5 +67,5 @@ Our Postgres database sports the following data schema - database tables followe
     ```
 
 * POST _/command/_
-  * Request: `string` - command type
+  * Request: `string` - command type, stored under `command` key
   * Response: same as `POST _/command_audio/_`'s response logic
