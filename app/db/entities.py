@@ -7,22 +7,6 @@ from sqlalchemy.ext import declarative
 Base = declarative.declarative_base()
 
 
-class Session(Base):
-  __tablename__ = 'session'
-  id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True)
-  time = sqlalchemy.Column(sqlalchemy.TIMESTAMP)
-  os = sqlalchemy.Column(sqlalchemy.VARCHAR)
-  cpu_count = sqlalchemy.Column(sqlalchemy.Integer)
-  release = sqlalchemy.Column(sqlalchemy.VARCHAR)
-  hostname = sqlalchemy.Column(sqlalchemy.VARCHAR)
-
-  commands = sqlalchemy.orm.relationship(
-    'Command',
-    back_populates='session',
-    order_by=Command.time
-  )
-
-
 class Command(Base):
   __tablename__ = 'command'
   id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True)
@@ -43,15 +27,19 @@ class Command(Base):
   )
 
 
-class Document(Base):
-  __tablename__ = 'document'
+class Session(Base):
+  __tablename__ = 'session'
   id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True)
-  website = sqlalchemy.Column(sqlalchemy.String)
+  time = sqlalchemy.Column(sqlalchemy.TIMESTAMP)
+  os = sqlalchemy.Column(sqlalchemy.VARCHAR)
+  cpu_count = sqlalchemy.Column(sqlalchemy.Integer)
+  release = sqlalchemy.Column(sqlalchemy.VARCHAR)
+  hostname = sqlalchemy.Column(sqlalchemy.VARCHAR)
 
-  document_atoms = sqlalchemy.orm.relationship(
-    'DocumentAtom',
-    back_populates='document',
-    order_by=DocumentAtom.rank
+  commands = sqlalchemy.orm.relationship(
+    'Command',
+    back_populates='session',
+    order_by=Command.time
   )
 
 
@@ -84,4 +72,16 @@ class DocumentAtom(Base):
   document = sqlalchemy.orm.relationship(
     'Document',
     back_populates='document_atoms'
+  )
+
+
+class Document(Base):
+  __tablename__ = 'document'
+  id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True)
+  website = sqlalchemy.Column(sqlalchemy.String)
+
+  document_atoms = sqlalchemy.orm.relationship(
+    'DocumentAtom',
+    back_populates='document',
+    order_by=DocumentAtom.rank
   )
