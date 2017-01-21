@@ -31,7 +31,8 @@ class Command(Base):
   '''
   command is either
     "goto --website--", "goto_full --website--"
-    "search", "login_facebook"
+    "goto_link", "search",
+    "facebook_login", "facebook_logout",
   '''
   command = sqlalchemy.Column(sqlalchemy.TEXT)
   time = sqlalchemy.Column(sqlalchemy.TIMESTAMP)
