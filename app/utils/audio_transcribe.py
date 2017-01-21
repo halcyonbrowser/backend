@@ -6,8 +6,8 @@ recognizer = speech_recognition.Recognizer()
 def audio_transcribe(file_path):
   """
   Transcribe an audio file into string text
-  @param {string} file_path - absolute file path
-  @returns {string|null} transcribed text
+  :param file_path:string - absolute file path
+  :returns string|null - transcribed text
   """
 
   try:
