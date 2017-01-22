@@ -63,6 +63,8 @@ def new_session(device_info):
 def command_execute(uttered, session_id):
   """
   Parse out a command and execute command as wanted
+  :param uttered:string
+  :param session_id:int
   :return: (Error, dict)
   """
   commands = [
@@ -90,22 +92,58 @@ def command_execute(uttered, session_id):
   if actual is None or utterance_substring is None:
     return ValueError("Command doesn't exist"), {}
 
-  actual_standardized = commands_standardized.get(actual)
+  actual_command_standardized = commands_standardized.get(actual)
   command_entity = entities.Command(
     session_id=session_id,
-    command=actual_standardized,
+    command=actual_command_standardized,
     time=datetime.now().microsecond
   )
   session.add_all(command_entity)
   session.commit()
 
-  return actual_standardized, utterance_substring
+  '''
+  If command transcription from text/speech requires
+  no further processing, we are done!
+  '''
+  if actual_command_standardized in [
+    "facebook_login",
+    "facebook_logout",
+    "facebook_messages",
+    "facebook_timeline",
+    "facebook_notifications"
+  ]:
+    return None, {
+      "utterance": uttered,
+      "command": actual_command_standardized
+    }
+
+  '''
+  Command transcriptions that require further processing
+  '''
+  _, command_utterance_parameter = uttered.split(utterance_substring)
+  if not command_utterance_parameter:
+    return ValueError("Command parameter not provided"), {}
+
+  if actual_command_standardized == "goto":
+    utils.info_cards(command_utterance_parameter)
+  elif actual_command_standardized == "goto_full":
+    utils.info_cards(command_utterance_parameter, full=True)
+  elif actual_command_standardized == "goto_link":
+    utils.info_cards(command_utterance_parameter)
+  elif actual_command_standardized == "search":
+    utils.search(command_utterance_parameter)
+
+  return None, {
+    "utterance": uttered,
+    "command": actual_command_standardized
+  }
 
 
 def command_audio(audio_file, session_id):
   """
   Transcribe an audio file command into its text form and process accordingly
-  :param audio_file:
+  :param audio_file:string
+  :param session_id:int
   :return: (Error, dict)
   """
   if not isinstance(audio_file, dict):
@@ -116,6 +154,6 @@ def command_audio(audio_file, session_id):
 
   transcription = utils.audio_transcribe(audio_file)
   if transcription is None:
-    return TypeError("No audio was picked up"), ""
+    return TypeError("No sensible audio was picked up"), ""
 
   return command_execute(transcription, session_id)
