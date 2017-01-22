@@ -66,14 +66,16 @@ def command_execute(uttered, session_id):
   :return: (Error, dict)
   """
   commands = [
-    "go to", "go to full",
-    "search", "login Facebook",
+    "go to", "go to full", "go to link",
+    "search",
+    "login Facebook", "logout Facebook",
     "read messages", "read timeline",
-    "read notifications", "logout Facebook"
+    "read notifications"
   ]
   commands_standardized = {
     "go to": "goto",
     "go to full": "goto_full",
+    "go to link": "goto_link",
     "login Facebook": "facebook_login",
     "logout Facebook": "facebook_logout",
     "search": "search",
