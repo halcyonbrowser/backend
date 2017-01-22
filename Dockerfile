@@ -9,5 +9,7 @@ ADD requirements.txt requirements.txt
 RUN pip install -r requirements.txt
 RUN chmod +x pdfminer_install.sh && bash -c "./pdfminer_install.sh"
 
+RUN mkdir /audio_command_temp && mkdir /pdf_temp
+
 VOLUME /halcyon
 EXPOSE 80
