@@ -7,10 +7,12 @@ itsdangerous==0.24
 Jinja2==2.9.4
 MarkupSafe==0.23
 pdfkit==0.6.1
+pdfminer==20100424
 pocketsphinx==0.1.3
 psycopg2==2.6.2
 pycorenlp==0.3.0
 requests==2.12.5
+slate==0.3
 SpeechRecognition==3.6.0
 SQLAlchemy==1.1.5
 summa==0.0.7
