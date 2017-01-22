@@ -6,6 +6,7 @@ import utils
 
 from cerberus.validator import Validator
 import sqlalchemy
+from sqlalchemy import MetaData
 from sqlalchemy.orm import sessionmaker
 
 
@@ -20,6 +21,8 @@ engine = sqlalchemy.create_engine(
 Session = sessionmaker()
 Session.configure(bind=engine)
 session = Session()
+metadata = MetaData()
+metadata.create_all(engine)
 
 
 def new_session(device_info):
@@ -124,18 +127,67 @@ def command_execute(uttered, session_id):
   if not command_utterance_parameter:
     return ValueError("Command parameter not provided"), {}
 
+  normalized_parameter = utils.nlp_tools.text_to_link(
+    command_utterance_parameter
+  )
+
+  '''
+  If we have cached results from prior goto executions,
+  use those cached results instead to save time!
+  '''
   if actual_command_standardized == "goto":
-    utils.info_cards(command_utterance_parameter)
+    documents = session\
+      .query(entities.Document)\
+      .filter(entities.Document.website.like("%"+normalized_parameter+"%"))\
+      .all()
+
+    if len(documents) > 0:
+      return map(
+        lambda document_atom: {
+          "doc_id": document_atom.document_id,
+          "rank": document_atom.rank,
+          "type": document_atom.type,
+          "text": document_atom.text,
+          "entity": document_atom.entity
+        },
+        [document.document_atoms for document in documents]
+      )
+
+  results = []
+  if actual_command_standardized == "goto":
+    results = utils.info_cards(normalized_parameter)
   elif actual_command_standardized == "goto_full":
-    utils.info_cards(command_utterance_parameter, full=True)
+    results = utils.info_cards(normalized_parameter, full=True)
   elif actual_command_standardized == "goto_link":
-    utils.info_cards(command_utterance_parameter)
+    results = utils.info_cards(normalized_parameter)
   elif actual_command_standardized == "search":
-    utils.search(command_utterance_parameter)
+    results = utils.search(normalized_parameter)
+
+  '''
+  Never executed a goto operation on this link before?
+  Save our results now!
+  '''
+  if actual_command_standardized == "goto":
+    new_document = entities.Document(
+      website=normalized_parameter
+    )
+    session.add_all(new_document)
+    session.commit()
+    session.add_all(
+      [entities.DocumentAtom(
+        rank=result.rank,
+        text=result.text,
+        type=result.type,
+        entity=result.entity,
+        document_id=new_document.id
+      ) for result in results]
+    )
+  session.commit()
 
   return None, {
     "utterance": uttered,
-    "command": actual_command_standardized
+    "command": actual_command_standardized,
+    "cards": results
   }
 
 
