@@ -1,7 +1,6 @@
 from os import environ
 
 from googleapiclient.discovery import build
-from pycorenlp import StanfordCoreNLP
 
 
 def search(search_term):
@@ -20,8 +19,6 @@ def search(search_term):
     environ.get("GOOGLE_API_KEY", ""),
     environ.get("GOOGLE_CSE_ID", ""),
   )
-
-  nlp = StanfordCoreNLP("core_nlp:9000")
 
   def mapper(result):
     """

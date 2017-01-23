@@ -35,7 +35,7 @@ def text_to_link(uttered):
     accum.append(current_word)
     return accum
 
-  return reduce(tld_squash, uttered.split(), [])
+  return ' '.join(reduce(tld_squash, uttered.split(), []))
 
 
 def link_to_content(link):
@@ -49,8 +49,7 @@ def link_to_content(link):
 
   pdfkit.from_url(link, pdf_path, options={
     "no-images": False,
-    "disable-javascript": False,
-    "print-media-type": False
+    "disable-javascript": False
   })
 
   with open(pdf_path) as pdf_fp:

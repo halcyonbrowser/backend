@@ -6,14 +6,14 @@ import utils
 
 from cerberus.validator import Validator
 import sqlalchemy
-from sqlalchemy import MetaData
 from sqlalchemy.orm import sessionmaker
 
 
 engine = sqlalchemy.create_engine(
-    'postgresql+psycopg2://{}:{}@/{}'.format(
+    'postgresql+psycopg2://{}:{}@{}/{}'.format(
       environ.get('POSTGRES_USER'),
       environ.get('POSTGRES_PASSWORD'),
+      "db",
       environ.get('POSTGRES_DB')
     ),
     echo=True
@@ -21,8 +21,11 @@ engine = sqlalchemy.create_engine(
 Session = sessionmaker()
 Session.configure(bind=engine)
 session = Session()
-metadata = MetaData()
-metadata.create_all(engine)
+entities.Base.metadata.create_all(engine)
+entities.Command.metadata.create_all(engine)
+entities.Document.metadata.create_all(engine)
+entities.DocumentAtom.metadata.create_all(engine)
+session.commit()
 
 
 def new_session(device_info):
@@ -31,8 +34,16 @@ def new_session(device_info):
   :param device_info:object
   :return: (Error, token:string)
   """
+  entities.Base.metadata.create_all(engine)
+  entities.Command.metadata.create_all(engine)
+  entities.Document.metadata.create_all(engine)
+  entities.DocumentAtom.metadata.create_all(engine)
+  session.commit()
+
   if not isinstance(device_info, dict):
     return TypeError("device_info must be a dict"), ""
+
+  device_info["cpu_count"] = int(device_info.get("cpu_count"))
 
   validator = Validator({
     'os': {
@@ -53,12 +64,12 @@ def new_session(device_info):
     return TypeError("Invalid device_info input was given"), ""
 
   session_entity = entities.Session(
-    os=device_info.os,
-    cpu_count=device_info.cpu_count,
-    release=device_info.release,
-    hostname=device_info.hostname
+    os=device_info.get("os"),
+    cpu_count=device_info.get("cpu_count"),
+    release=device_info.get("release"),
+    hostname=device_info.get("hostname")
   )
-  session.add_all(session_entity)
+  session.add_all([session_entity])
   session.commit()
   return None, session_entity.id
 
@@ -98,10 +109,9 @@ def command_execute(uttered, session_id):
   actual_command_standardized = commands_standardized.get(actual)
   command_entity = entities.Command(
     session_id=session_id,
-    command=actual_command_standardized,
-    time=datetime.now().microsecond
+    command=actual_command_standardized
   )
-  session.add_all(command_entity)
+  session.add_all([command_entity])
   session.commit()
 
   '''
@@ -123,7 +133,7 @@ def command_execute(uttered, session_id):
   '''
   Command transcriptions that require further processing
   '''
-  _, command_utterance_parameter = uttered.split(utterance_substring)
+  _, command_utterance_parameter = uttered.split(utterance_substring, 1)
   if not command_utterance_parameter:
     return ValueError("Command parameter not provided"), {}
 
@@ -198,7 +208,7 @@ def command_audio(audio_file, session_id):
   :param session_id:int
   :return: (Error, dict)
   """
-  if not isinstance(audio_file, dict):
+  if not isinstance(audio_file, basestring):
     return TypeError("audio_file must be a string"), ""
 
   if not path.exists(audio_file):

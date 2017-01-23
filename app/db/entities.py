@@ -1,4 +1,3 @@
-from enum import Enum
 import sqlalchemy
 import sqlalchemy.orm
 from sqlalchemy.ext import declarative
@@ -45,13 +44,8 @@ class DocumentAtom(Base):
                                   sqlalchemy.ForeignKey('document.id'))
   rank = sqlalchemy.Column(sqlalchemy.Integer)
   text = sqlalchemy.Column(sqlalchemy.TEXT)
-  type = sqlalchemy.Column(sqlalchemy.Enum(
-    Enum("highlight", "media", "factoid", "link")
-  ))
-  entity = sqlalchemy.Column(sqlalchemy.Enum(
-    Enum("person", "organization", "location",
-         "money", "percent", "date", "time"))
-  )
+  type = sqlalchemy.Column(sqlalchemy.VARCHAR)
+  entity = sqlalchemy.Column(sqlalchemy.VARCHAR)
 
   document = sqlalchemy.orm.relationship(
     'Document',

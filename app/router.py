@@ -6,7 +6,7 @@ import actions
 
 
 app = Flask(__name__)
-AUDIO_COMMAND_TEMP = environ.get('AUDIO_COMMAND_TEMP')
+AUDIO_COMMAND_TEMP = environ.get('AUDIO_COMMAND_FOLDER')
 
 
 @app.route('/')
@@ -42,11 +42,10 @@ def init():
 @app.route('/command_audio', methods=['POST'])
 def command_audio():
   app.logger.debug('POST /command_audio')
-  payload = request.get_json(force=True, silent=True)
-  session_id = payload.get("token")
 
   file_name = path.join(AUDIO_COMMAND_TEMP, str(int(time.time() * 1000)))
   file_obj = request.files['command']
+  session_id = request.form.get('token')
   file_obj.save(file_name)
 
   error, results = actions.command_audio(file_name, session_id)
